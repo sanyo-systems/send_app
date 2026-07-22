@@ -1,0 +1,1 @@
+"""Common database models package."""

@@ -1,0 +1,24 @@
+# Development dependencies for working on this repository on another PC.
+# Python version used in the current environment: 3.12.10
+watchdog==6.0.0
+psutil==7.2.2
+pyodbc==5.3.0
+requests==2.33.0
+pyinstaller==6.19.0
+fastapi
+sqlalchemy
+pydantic
+pydantic-settings
+asyncpg
+psycopg2-binary
+uvicorn
+pyinstaller
+
+# codexで追加
+fastapi
+sqlalchemy
+pydantic
+pydantic-settings
+asyncpg
+psycopg2-binary
+uvicorn

@@ -1,0 +1,686 @@
+﻿<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>check_record 処理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <main class="mx-auto max-w-[1880px] px-3 py-3">
+      <section class="grid gap-4 xl:grid-cols-[0.82fr_1.18fr]">
+        <div class="rounded-2xl border border-slate-300 bg-white shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-4 py-4">
+            <div class="space-y-1">
+              <p id="page-title" class="text-2xl font-bold">炉種: - / 炉: -</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <a href="/portal" class="rounded-md border border-slate-400 bg-slate-100 px-8 py-3 text-lg font-semibold">選択に戻る</a>
+              <button type="button" class="rounded-md border border-slate-400 bg-slate-100 px-8 py-3 text-lg font-semibold">変更</button>
+              <a href="/admin" class="rounded-md border border-slate-400 bg-sky-600 px-8 py-3 text-lg font-semibold text-white">テーブル登録</a>
+            </div>
+          </div>
+
+          <div class="space-y-5 p-4">
+            <section id="single-mode-panel" class="hidden rounded-md border border-slate-300 p-4">
+              <h2 class="mb-3 text-2xl font-bold">1H/4Hチェック</h2>
+              <form id="single-check-record-form" class="space-y-6">
+                <div class="hidden">
+                  <select id="single_equipment_id"></select>
+                  <select id="single_equipment_group_id"></select>
+                  <select id="single_factory_id"></select>
+                  <select id="single_recorder_ip_id"></select>
+                </div>
+
+                <div id="single-standard-layout" class="space-y-6">
+                  <div class="grid gap-6 lg:grid-cols-3">
+                    <label class="flex items-center gap-3 text-lg"><span class="min-w-28 font-semibold">処理温度①</span><input id="single_temperature_1" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" /><span>℃</span></label>
+                    <label class="flex items-center gap-3 text-lg"><span class="min-w-28 font-semibold">処理温度②</span><input id="single_temperature_2" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" /><span>℃</span></label>
+                    <label class="flex items-center gap-3 text-lg"><span class="min-w-24 font-semibold">コンベア</span><input id="single_conveyor_speed" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" /><span>M</span></label>
+                  </div>
+
+                  <div class="grid gap-6 lg:grid-cols-[220px_1fr_auto] lg:items-end">
+                    <label class="flex flex-col gap-2 text-lg"><span class="font-semibold">区分</span><select id="single_check_type" class="w-full rounded-md border border-slate-300 px-3 py-2"><option value="1H">1H</option><option value="4H">4H</option></select></label>
+                    <label class="flex items-center gap-3 text-lg"><span class="min-w-28 font-semibold">確認者</span><input id="single_confirmed_by" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" placeholder="社員番号" /></label>
+                    <button type="submit" class="rounded-md border border-slate-500 bg-blue-600 px-6 py-3 text-xl font-semibold text-white">登録</button>
+                  </div>
+                </div>
+
+                <div id="single-quench-layout" class="hidden space-y-6">
+                  <div class="grid gap-4 lg:grid-cols-[auto_96px_auto_96px_auto_auto_96px_auto_96px_auto] lg:items-center">
+                    <span class="text-lg font-semibold">HQ</span>
+                    <input id="single_quench_temperature_hq" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" />
+                    <span class="text-lg">℃</span>
+                    <input id="single_quench_speed_hq" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" />
+                    <span class="text-lg">M</span>
+                    <span class="text-lg font-semibold">HT</span>
+                    <input id="single_quench_temperature_ht" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" />
+                    <span class="text-lg">℃</span>
+                    <input id="single_quench_speed_ht" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" />
+                    <span class="text-lg">M</span>
+                  </div>
+
+                  <div class="grid gap-6 lg:grid-cols-[220px_1fr_auto] lg:items-end">
+                    <label class="flex flex-col gap-2 text-lg"><span class="font-semibold">区分</span><select id="single_check_type_quench" class="w-full rounded-md border border-slate-300 px-3 py-2"><option value="1H">1H</option><option value="4H">4H</option></select></label>
+                    <label class="flex items-center gap-3 text-lg"><span class="min-w-28 font-semibold">確認者</span><input id="single_quench_confirmed_by" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2" placeholder="社員番号" /></label>
+                    <button type="submit" class="rounded-md border border-slate-500 bg-blue-600 px-6 py-3 text-xl font-semibold text-white">登録</button>
+                  </div>
+                </div>
+              </form>
+
+              <div class="mt-8 rounded-md border border-slate-300 p-4">
+                <h3 class="mb-3 text-xl font-bold">任意コメント送信</h3>
+                <form id="single-comment-form" class="grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">送信先設備</span><select id="single_comment_equipment_id" class="rounded-md border border-slate-300 px-3 py-3 text-lg"></select></label>
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">コメント</span><input id="single_comment_text" type="text" class="rounded-md border border-slate-300 px-3 py-3 text-lg" /></label>
+                  <button type="submit" class="rounded-md border border-slate-500 bg-emerald-600 px-6 py-3 text-lg font-semibold text-white">コメント送信</button>
+                </form>
+              </div>
+            </section>
+
+            <section id="batch-mode-panel" class="hidden rounded-md border border-slate-300 p-4">
+              <h2 class="mb-3 text-2xl font-bold">1時間4時間チェック</h2>
+              <form id="batch-check-record-form" class="space-y-5">
+                <div class="space-y-3" id="batch-furnace-list"></div>
+
+                <div class="grid gap-4 lg:grid-cols-[160px_260px_auto] lg:items-end">
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">区分</span><select id="batch_check_type" class="rounded-md border border-slate-300 px-3 py-2 text-lg"><option value="1H">1H</option><option value="4H">4H</option></select></label>
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">確認者</span><input id="batch_confirmed_by" type="text" class="rounded-md border border-slate-300 px-3 py-2 text-lg" placeholder="社員番号" /></label>
+                  <button type="submit" class="rounded-md border border-slate-500 bg-blue-600 px-6 py-2 text-xl font-semibold text-white">登録</button>
+                </div>
+              </form>
+
+              <div class="mt-8 rounded-md border border-slate-300 p-4">
+                <h3 class="mb-3 text-xl font-bold">任意コメント送信</h3>
+                <form id="batch-comment-form" class="grid gap-4 lg:grid-cols-[220px_220px_auto]">
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">送信先設備</span><select id="batch_comment_equipment_id" class="rounded-md border border-slate-300 px-3 py-2 text-lg"></select></label>
+                  <label class="flex flex-col gap-2"><span class="text-base font-semibold">コメント</span><input id="batch_comment_text" type="text" class="rounded-md border border-slate-300 px-3 py-2 text-lg" /></label>
+                  <button type="submit" class="rounded-md border border-slate-500 bg-emerald-600 px-5 py-2 text-lg font-semibold text-white">コメント送信</button>
+                </form>
+              </div>
+            </section>
+
+            <p id="message" class="text-base text-slate-700"></p>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-2xl font-bold">履歴</h2>
+            <div class="flex gap-3">
+              <button type="button" data-filter="today" class="history-filter rounded-md border border-slate-400 bg-slate-100 px-8 py-3 text-lg font-semibold">本日</button>
+              <button type="button" data-filter="yesterday" class="history-filter rounded-md border border-slate-400 bg-slate-100 px-8 py-3 text-lg font-semibold">昨日</button>
+              <button type="button" data-filter="day_before_yesterday" class="history-filter rounded-md border border-slate-400 bg-slate-100 px-8 py-3 text-lg font-semibold">一昨日</button>
+            </div>
+          </div>
+
+          <section id="single-history-panel" class="hidden space-y-6">
+            <section>
+              <h3 class="mb-2 text-2xl font-bold">■ 1H履歴</h3>
+              <div class="max-h-[640px] overflow-auto rounded-md border border-slate-300">
+                <table class="min-w-full text-center text-lg">
+                  <thead class="bg-stone-100"><tr><th class="border border-slate-300 px-4 py-2">日付</th><th class="border border-slate-300 px-4 py-2">時刻</th><th class="border border-slate-300 px-4 py-2">確認者</th><th class="border border-slate-300 px-4 py-2">入力時刻</th><th id="history-temperature-1-label" class="border border-slate-300 px-4 py-2">処理温度①</th><th id="history-conveyor-label" class="border border-slate-300 px-4 py-2">コンベア</th><th id="history-temperature-2-label" class="border border-slate-300 px-4 py-2">処理温度②</th><th id="history-conveyor-label-ht" class="hidden border border-slate-300 px-4 py-2">HTコンベア速度</th></tr></thead>
+                  <tbody id="history-1h-body"></tbody>
+                </table>
+              </div>
+            </section>
+            <section>
+              <h3 class="mb-2 text-2xl font-bold">■ 4H履歴</h3>
+              <div class="max-h-[640px] overflow-auto rounded-md border border-slate-300">
+                <table class="min-w-full text-center text-lg">
+                  <thead class="bg-stone-100"><tr><th class="border border-slate-300 px-4 py-2">日付</th><th class="border border-slate-300 px-4 py-2">時刻</th><th class="border border-slate-300 px-4 py-2">確認者</th><th class="border border-slate-300 px-4 py-2">入力時刻</th><th id="history-temperature-1-label-4h" class="border border-slate-300 px-4 py-2">処理温度①</th><th id="history-conveyor-label-4h" class="border border-slate-300 px-4 py-2">コンベア</th><th id="history-temperature-2-label-4h" class="border border-slate-300 px-4 py-2">処理温度②</th><th id="history-conveyor-label-ht-4h" class="hidden border border-slate-300 px-4 py-2">HTコンベア速度</th></tr></thead>
+                  <tbody id="history-4h-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section id="batch-history-panel" class="hidden space-y-6">
+            <section>
+              <h3 class="mb-2 text-2xl font-bold">■ 1H一括履歴</h3>
+              <div class="max-h-[640px] overflow-auto rounded-md border border-slate-300">
+                <table class="min-w-full text-center text-lg">
+                  <thead id="batch-history-1h-head" class="bg-stone-100"></thead>
+                  <tbody id="batch-history-1h-body"></tbody>
+                </table>
+              </div>
+            </section>
+            <section>
+              <h3 class="mb-2 text-2xl font-bold">■ 4H一括履歴</h3>
+              <div class="max-h-[640px] overflow-auto rounded-md border border-slate-300">
+                <table class="min-w-full text-center text-lg">
+                  <thead id="batch-history-4h-head" class="bg-stone-100"></thead>
+                  <tbody id="batch-history-4h-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode") || "single";
+      const equipmentId = params.get("equipment_id");
+      const groupId = params.get("group_id");
+      const pageTitle = document.getElementById("page-title");
+      const singleModePanel = document.getElementById("single-mode-panel");
+      const batchModePanel = document.getElementById("batch-mode-panel");
+      const singleHistoryPanel = document.getElementById("single-history-panel");
+      const batchHistoryPanel = document.getElementById("batch-history-panel");
+      const messageArea = document.getElementById("message");
+      const historyFilterButtons = document.querySelectorAll(".history-filter");
+      const history1hBody = document.getElementById("history-1h-body");
+      const history4hBody = document.getElementById("history-4h-body");
+      const historyTemperature1Label = document.getElementById("history-temperature-1-label");
+      const historyTemperature2Label = document.getElementById("history-temperature-2-label");
+      const historyConveyorLabel = document.getElementById("history-conveyor-label");
+      const historyConveyorLabelHt = document.getElementById("history-conveyor-label-ht");
+      const historyTemperature1Label4h = document.getElementById("history-temperature-1-label-4h");
+      const historyTemperature2Label4h = document.getElementById("history-temperature-2-label-4h");
+      const historyConveyorLabel4h = document.getElementById("history-conveyor-label-4h");
+      const historyConveyorLabelHt4h = document.getElementById("history-conveyor-label-ht-4h");
+      const batchHistory1hHead = document.getElementById("batch-history-1h-head");
+      const batchHistory1hBody = document.getElementById("batch-history-1h-body");
+      const batchHistory4hHead = document.getElementById("batch-history-4h-head");
+      const batchHistory4hBody = document.getElementById("batch-history-4h-body");
+      const singleStandardLayout = document.getElementById("single-standard-layout");
+      const singleQuenchLayout = document.getElementById("single-quench-layout");
+      let currentDateFilter = "today";
+      let batchFurnaces = [];
+      let batchDisplayFurnaces = [];
+      let singleContext = null;
+      let batchContext = null;
+
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || "取得に失敗しました。");
+        return body;
+      }
+
+      function renderSelect(selectElement, options, valueKey, labelBuilder) {
+        selectElement.innerHTML = options.map((option) => `<option value="${option[valueKey]}">${labelBuilder(option)}</option>`).join("");
+      }
+
+      function isQuenchGroupName(groupName) {
+        return String(groupName || "").includes("焼入");
+      }
+
+      function isPitFurnaceList(furnaces) {
+        const furnaceNames = furnaces.map((furnace) => String(furnace.equipment_name || "").trim());
+        return furnaceNames.includes("PG-1") && furnaceNames.includes("SQ-1");
+      }
+
+      function getPitDisplayOrder(name) {
+        const pitOrder = ["PG-1", "PG-2", "PG-3", "PG-4", "PG-5", "SQ-1", "SQ-2", "SQ-3", "油槽"];
+        const orderIndex = pitOrder.indexOf(String(name || "").trim());
+        return orderIndex === -1 ? Number.MAX_SAFE_INTEGER : orderIndex;
+      }
+
+      function getBatchDisplayFurnaces(furnaces) {
+        if (!isPitFurnaceList(furnaces)) {
+          return [...furnaces];
+        }
+
+        return [...furnaces].sort((left, right) => {
+          const leftOrder = getPitDisplayOrder(left.equipment_name);
+          const rightOrder = getPitDisplayOrder(right.equipment_name);
+          if (leftOrder !== rightOrder) {
+            return leftOrder - rightOrder;
+          }
+          return String(left.equipment_name || "").localeCompare(String(right.equipment_name || ""));
+        });
+      }
+
+      function getBatchInputFurnaces(furnaces) {
+        if (!isPitFurnaceList(furnaces)) {
+          return [...furnaces];
+        }
+
+        const pitInputOrder = [
+          "PG-1",
+          "SQ-1",
+          "PG-5",
+          "PG-2",
+          "\u30d4\u30c3\u30c8\u3000\u6cb9\u69fd",
+          "\u6cb9\u69fd",
+          "\u30d4\u30c3\u30c8\u8f38\u9001",
+          "SQ-2",
+          "PG-4",
+          "PG-3",
+          "SQ-3"
+        ];
+
+        return [...furnaces].sort((left, right) => {
+          const leftName = String(left.equipment_name || "").trim();
+          const rightName = String(right.equipment_name || "").trim();
+          const leftOrder = pitInputOrder.indexOf(leftName);
+          const rightOrder = pitInputOrder.indexOf(rightName);
+          const normalizedLeftOrder = leftOrder === -1 ? Number.MAX_SAFE_INTEGER : leftOrder;
+          const normalizedRightOrder = rightOrder === -1 ? Number.MAX_SAFE_INTEGER : rightOrder;
+
+          if (normalizedLeftOrder !== normalizedRightOrder) {
+            return normalizedLeftOrder - normalizedRightOrder;
+          }
+          return leftName.localeCompare(rightName);
+        });
+      }
+
+      function getBatchDisplayName(name) {
+        const normalizedName = String(name || "").trim();
+        if (normalizedName === "ピット　油槽") {
+          return "ピット　油槽";
+        }
+        return normalizedName;
+      }
+
+      function updateSingleHistoryHeaderLabels(groupName) {
+        const isQuench = isQuenchGroupName(groupName);
+        const temperature1Label = isQuench ? "HQ温度" : "処理温度①";
+        const temperature2Label = isQuench ? "HT温度" : "コンベア";
+        const conveyorLabel = isQuench ? "HQコンベア速度" : "処理温度②";
+        historyTemperature1Label.textContent = temperature1Label;
+        historyTemperature2Label.textContent = temperature2Label;
+        historyConveyorLabel.textContent = conveyorLabel;
+        historyConveyorLabelHt.classList.toggle("hidden", !isQuench);
+        historyTemperature1Label4h.textContent = temperature1Label;
+        historyTemperature2Label4h.textContent = temperature2Label;
+        historyConveyorLabel4h.textContent = conveyorLabel;
+        historyConveyorLabelHt4h.classList.toggle("hidden", !isQuench);
+      }
+
+      function getDateLabelForFilter() {
+        const baseDate = new Date();
+        if (currentDateFilter === "yesterday") {
+          baseDate.setDate(baseDate.getDate() - 1);
+        } else if (currentDateFilter === "day_before_yesterday") {
+          baseDate.setDate(baseDate.getDate() - 2);
+        }
+        const month = String(baseDate.getMonth() + 1).padStart(2, "0");
+        const day = String(baseDate.getDate()).padStart(2, "0");
+        return `${month}/${day}`;
+      }
+
+      function renderHistoryRows(target, records) {
+        const isQuench = isQuenchGroupName(singleContext?.equipment_group_name);
+        if (!records.length) {
+          target.innerHTML = `<tr><td colspan="${isQuench ? 8 : 7}" class="border border-slate-200 px-4 py-6 text-center text-slate-500">データはありません。</td></tr>`;
+          return;
+        }
+        target.innerHTML = records.map((record) => `
+          <tr>
+            <td class="border border-slate-200 px-4 py-2">${record.record_date_label ?? "-"}</td>
+            <td class="border border-slate-200 px-4 py-2">${record.check_hour ?? "-"}</td>
+            <td class="border border-slate-200 px-4 py-2">${record.confirmed_by ?? "-"}</td>
+            <td class="border border-slate-200 px-4 py-2">${record.input_time_label ?? "-"}</td>
+            <td class="border border-slate-200 px-4 py-2">${record.temperature_1 ?? record.measured_temperature ?? "-"}</td>
+            ${
+              isQuench
+                ? `<td class="border border-slate-200 px-4 py-2">${record.conveyor_speed ?? "-"}</td>
+                   <td class="border border-slate-200 px-4 py-2">${record.temperature_2 ?? "-"}</td>
+                   <td class="border border-slate-200 px-4 py-2">${record.conveyor_speed_ht ?? "-"}</td>`
+                : `<td class="border border-slate-200 px-4 py-2">${record.temperature_2 ?? "-"}</td>
+                   <td class="border border-slate-200 px-4 py-2">${record.conveyor_speed ?? "-"}</td>`
+            }
+          </tr>
+        `).join("");
+      }
+
+      function renderSingleFixedHourHistoryRows(target, records) {
+        const fallbackDateLabel = getDateLabelForFilter();
+        const isQuench = isQuenchGroupName(singleContext?.equipment_group_name);
+        target.innerHTML = Array.from({ length: 24 }, (_, hourIndex) => 23 - hourIndex).map((checkHour) => {
+          const record = records.find((item) => Number(item.check_hour) === checkHour);
+          return `
+            <tr>
+              <td class="border border-slate-200 px-4 py-2">${record?.record_date_label || fallbackDateLabel}</td>
+              <td class="border border-slate-200 px-4 py-2">${checkHour}</td>
+              <td class="border border-slate-200 px-4 py-2">${record?.confirmed_by ?? "-"}</td>
+              <td class="border border-slate-200 px-4 py-2">${record?.input_time_label ?? "-"}</td>
+              <td class="border border-slate-200 px-4 py-2">${record?.temperature_1 ?? "-"}</td>
+              ${
+                isQuench
+                  ? `<td class="border border-slate-200 px-4 py-2">${record?.conveyor_speed ?? "-"}</td>
+                     <td class="border border-slate-200 px-4 py-2">${record?.temperature_2 ?? "-"}</td>
+                     <td class="border border-slate-200 px-4 py-2">${record?.conveyor_speed_ht ?? "-"}</td>`
+                  : `<td class="border border-slate-200 px-4 py-2">${record?.temperature_2 ?? "-"}</td>
+                     <td class="border border-slate-200 px-4 py-2">${record?.conveyor_speed ?? "-"}</td>`
+              }
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function renderBatchMatrix(headElement, bodyElement, records, furnaces, emptyLabel, useFixedHours) {
+        const displayFurnaces = getBatchDisplayFurnaces(furnaces);
+        const furnaceNames = displayFurnaces.map((furnace) => getBatchDisplayName(furnace.equipment_name));
+        headElement.innerHTML = `
+          <tr>
+            <th class="border border-slate-300 px-4 py-2">日付</th>
+            <th class="border border-slate-300 px-4 py-2">時刻</th>
+            <th class="border border-slate-300 px-4 py-2">確認者</th>
+            ${furnaceNames.map((name) => `<th class="border border-slate-300 px-4 py-2">${name}</th>`).join("")}
+          </tr>
+        `;
+
+        if (!furnaceNames.length) {
+          bodyElement.innerHTML = `<tr><td colspan="${2 + Math.max(furnaceNames.length, 1)}" class="border border-slate-200 px-4 py-6 text-center text-slate-500">${emptyLabel}</td></tr>`;
+          return;
+        }
+
+        const fallbackDateLabel = getDateLabelForFilter();
+
+        if (useFixedHours) {
+          bodyElement.innerHTML = Array.from({ length: 24 }, (_, hourIndex) => 23 - hourIndex).map((checkHour) => `
+            <tr>
+              <td class="border border-slate-200 px-4 py-2">${records.find((record) => Number(record.check_hour) === checkHour)?.record_date_label || fallbackDateLabel}</td>
+              <td class="border border-slate-200 px-4 py-2">${checkHour}</td>
+              <td class="border border-slate-200 px-4 py-2">${records.find((record) => Number(record.check_hour) === checkHour && record.confirmed_by && record.confirmed_by !== "-")?.confirmed_by || "-"}</td>
+              ${displayFurnaces.map((furnace) => {
+                const cell = records.find((record) => record.equipment_id === furnace.equipment_id && Number(record.check_hour) === checkHour);
+                return `<td class="border border-slate-200 px-4 py-2">${cell?.measured_temperature || "止"}</td>`;
+              }).join("")}
+            </tr>
+          `).join("");
+          return;
+        }
+
+        const rowKeys = [...new Set(records.map((record) => `${record.record_date_label}-${record.check_hour}`))].sort((left, right) => {
+          const [leftDateLabel, leftHourValue] = left.split("-");
+          const [rightDateLabel, rightHourValue] = right.split("-");
+          if (leftDateLabel !== rightDateLabel) {
+            return rightDateLabel.localeCompare(leftDateLabel);
+          }
+          return Number(rightHourValue) - Number(leftHourValue);
+        });
+        if (!rowKeys.length) {
+          bodyElement.innerHTML = `<tr><td colspan="${2 + Math.max(furnaceNames.length, 1)}" class="border border-slate-200 px-4 py-6 text-center text-slate-500">${emptyLabel}</td></tr>`;
+          return;
+        }
+
+        bodyElement.innerHTML = rowKeys.map((rowKey) => {
+          const [recordDateLabel, checkHour] = rowKey.split("-");
+          const confirmedBy = records.find((record) => record.record_date_label === recordDateLabel && String(record.check_hour) === String(checkHour) && record.confirmed_by && record.confirmed_by !== "-")?.confirmed_by || "-";
+          return `
+            <tr>
+              <td class="border border-slate-200 px-4 py-2">${recordDateLabel || fallbackDateLabel}</td>
+              <td class="border border-slate-200 px-4 py-2">${checkHour}</td>
+              <td class="border border-slate-200 px-4 py-2">${confirmedBy}</td>
+              ${displayFurnaces.map((furnace) => {
+                const cell = records.find((record) => record.equipment_id === furnace.equipment_id && record.record_date_label === recordDateLabel && String(record.check_hour) === String(checkHour));
+                return `<td class="border border-slate-200 px-4 py-2">${cell?.measured_temperature || "止"}</td>`;
+              }).join("")}
+            </tr>
+          `;
+        }).join("");
+      }
+
+      function toHalfWidth(value) {
+        return String(value || "")
+          .replace(/[０-９]/g, (character) => String.fromCharCode(character.charCodeAt(0) - 0xFEE0))
+          .replace(/　/g, " ");
+      }
+
+      function normalizeNumericInputValue(rawValue) {
+        return toHalfWidth(rawValue).trim().toLowerCase();
+      }
+
+      function isValidNumericInputValue(value) {
+        return value === "" || /^-?\d+(\.\d+)?$/.test(value);
+      }
+
+      function showNumericInputAlert() {
+        window.alert("数字での入力をお願いします。");
+      }
+
+      function getNormalizedNumericInputValue(inputElement) {
+        const normalizedValue = normalizeNumericInputValue(inputElement.value);
+        inputElement.value = normalizedValue;
+        if (!isValidNumericInputValue(normalizedValue)) {
+          showNumericInputAlert();
+          inputElement.focus();
+          throw new Error("numeric input validation error");
+        }
+        return normalizedValue;
+      }
+
+      function resetSingleCheckRecordInputs() {
+        document.getElementById("single_temperature_1").value = "";
+        document.getElementById("single_temperature_2").value = "";
+        document.getElementById("single_conveyor_speed").value = "";
+        document.getElementById("single_confirmed_by").value = "";
+        document.getElementById("single_quench_temperature_hq").value = "";
+        document.getElementById("single_quench_speed_hq").value = "";
+        document.getElementById("single_quench_temperature_ht").value = "";
+        document.getElementById("single_quench_speed_ht").value = "";
+        document.getElementById("single_quench_confirmed_by").value = "";
+      }
+
+      function resetBatchCheckRecordInputs() {
+        document.getElementById("batch_confirmed_by").value = "";
+        document.querySelectorAll(".batch-temperature-input").forEach((inputElement) => {
+          if (!inputElement.disabled) {
+            inputElement.value = "";
+          }
+        });
+      }
+
+      async function loadSingleMode() {
+        singleContext = await fetchJson(`/api/check-record-context/single?equipment_id=${encodeURIComponent(equipmentId)}`);
+        pageTitle.textContent = `炉種: ${singleContext.equipment_group_name || "-"} / 炉: ${singleContext.equipment_name || "-"}`;
+        renderSelect(document.getElementById("single_equipment_id"), [singleContext], "equipment_id", (option) => option.equipment_name);
+        renderSelect(document.getElementById("single_equipment_group_id"), [singleContext], "equipment_group_id", (option) => option.equipment_group_name || "-");
+        renderSelect(document.getElementById("single_factory_id"), [singleContext], "factory_id", (option) => option.factory_name);
+        renderSelect(document.getElementById("single_recorder_ip_id"), [singleContext], "recorder_ip_id", (option) => option.recorder_ip_display || "-");
+        updateSingleHistoryHeaderLabels(singleContext.equipment_group_name);
+        singleStandardLayout.classList.toggle("hidden", isQuenchGroupName(singleContext.equipment_group_name));
+        singleQuenchLayout.classList.toggle("hidden", !isQuenchGroupName(singleContext.equipment_group_name));
+
+        const commentOptions = await fetchJson(`/api/portal/equipment-options?group_id=${encodeURIComponent(singleContext.equipment_group_id)}`);
+        renderSelect(document.getElementById("single_comment_equipment_id"), commentOptions, "equipment_id", (option) => option.name);
+      }
+
+      async function loadBatchMode() {
+        batchContext = await fetchJson(`/api/check-record-context/batch?group_id=${encodeURIComponent(groupId)}`);
+        batchFurnaces = getBatchInputFurnaces(batchContext.furnaces);
+        batchDisplayFurnaces = getBatchDisplayFurnaces(batchContext.furnaces);
+        pageTitle.textContent = `炉種: ${batchContext.equipment_group_name || "-"}`;
+        document.getElementById("batch-furnace-list").innerHTML = batchFurnaces.map((furnace, index) => `
+          <div class="grid gap-4 rounded-md border border-slate-300 p-4 lg:grid-cols-[140px_220px] lg:items-center lg:justify-between">
+            <label class="flex items-center gap-2 text-lg">
+              <input type="checkbox" data-index="${index}" class="batch-furnace-check h-5 w-5" checked />
+              <span class="font-semibold">${getBatchDisplayName(furnace.equipment_name)}</span>
+            </label>
+            <input type="text" data-index="${index}" class="batch-temperature-input rounded-md border border-slate-300 px-3 py-2 text-lg" placeholder="実測温度" />
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".batch-furnace-check").forEach((checkboxElement) => {
+          checkboxElement.addEventListener("change", (event) => {
+            const checkElement = event.currentTarget;
+            const temperatureInputElement = document.querySelector(`.batch-temperature-input[data-index="${checkElement.dataset.index}"]`);
+            if (!temperatureInputElement) {
+              return;
+            }
+            temperatureInputElement.disabled = !checkElement.checked;
+            if (!checkElement.checked) {
+              temperatureInputElement.value = "";
+            }
+          });
+        });
+
+        const commentOptions = batchDisplayFurnaces.map((furnace) => ({ equipment_id: furnace.equipment_id, name: getBatchDisplayName(furnace.equipment_name) }));
+        renderSelect(document.getElementById("batch_comment_equipment_id"), commentOptions, "equipment_id", (option) => option.name);
+      }
+
+      async function loadHistory() {
+        if (mode === "batch") {
+          const records = await fetchJson(`/api/check-records/batch?group_id=${encodeURIComponent(groupId)}&date_filter=${encodeURIComponent(currentDateFilter)}`);
+          renderBatchMatrix(batchHistory1hHead, batchHistory1hBody, records.filter((record) => record.check_type === "1H"), batchFurnaces, "1H履歴はありません。", true);
+          renderBatchMatrix(batchHistory4hHead, batchHistory4hBody, records.filter((record) => record.check_type === "4H"), batchFurnaces, "4H履歴はありません。", false);
+          return;
+        }
+        const records = await fetchJson(`/api/check-records/single?equipment_id=${encodeURIComponent(equipmentId)}&date_filter=${encodeURIComponent(currentDateFilter)}`);
+        renderSingleFixedHourHistoryRows(history1hBody, records.filter((record) => record.check_type === "1H"));
+        renderHistoryRows(history4hBody, records.filter((record) => record.check_type === "4H"));
+      }
+
+      document.getElementById("single-check-record-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const useQuenchLayout = isQuenchGroupName(singleContext?.equipment_group_name);
+        const checkType = useQuenchLayout ? document.getElementById("single_check_type_quench").value : document.getElementById("single_check_type").value;
+        let confirmedBy;
+        let rawValueJson;
+        try {
+          confirmedBy = useQuenchLayout
+            ? getNormalizedNumericInputValue(document.getElementById("single_quench_confirmed_by"))
+            : getNormalizedNumericInputValue(document.getElementById("single_confirmed_by"));
+          rawValueJson = useQuenchLayout
+            ? {
+                temperature_1: getNormalizedNumericInputValue(document.getElementById("single_quench_temperature_hq")),
+                temperature_2: getNormalizedNumericInputValue(document.getElementById("single_quench_temperature_ht")),
+                conveyor_speed: getNormalizedNumericInputValue(document.getElementById("single_quench_speed_hq")),
+                conveyor_speed_ht: getNormalizedNumericInputValue(document.getElementById("single_quench_speed_ht")),
+                confirmed_by: confirmedBy,
+              }
+            : {
+                temperature_1: getNormalizedNumericInputValue(document.getElementById("single_temperature_1")),
+                temperature_2: getNormalizedNumericInputValue(document.getElementById("single_temperature_2")),
+                conveyor_speed: getNormalizedNumericInputValue(document.getElementById("single_conveyor_speed")),
+              };
+        } catch (error) {
+          if (error.message === "numeric input validation error") {
+            return;
+          }
+          throw error;
+        }
+        const payload = {
+          equipment_id: singleContext.equipment_id,
+          equipment_group_id: singleContext.equipment_group_id,
+          factory_id: singleContext.factory_id,
+          recorder_ip_id: singleContext.recorder_ip_id,
+          check_type: checkType,
+          confirmed_by: confirmedBy,
+          display_text: `${checkType}チェック / ${singleContext.equipment_name}`,
+          raw_value_json: rawValueJson,
+        };
+        try {
+          const result = await fetchJson("/api/check-records", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          resetSingleCheckRecordInputs();
+          messageArea.textContent = "";
+          await loadHistory();
+        } catch (error) {
+          if (error.message === "入力された確認者は存在しない番号のため登録できません") {
+            window.alert(error.message);
+          }
+          messageArea.textContent = error.message;
+        }
+      });
+
+      document.getElementById("batch-check-record-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        let confirmedBy;
+        let furnaceRecords;
+        try {
+          confirmedBy = getNormalizedNumericInputValue(document.getElementById("batch_confirmed_by"));
+          furnaceRecords = batchFurnaces.map((furnace, index) => ({
+            ...furnace,
+            is_checked: document.querySelector(`.batch-furnace-check[data-index="${index}"]`).checked,
+            measured_temperature: getNormalizedNumericInputValue(document.querySelector(`.batch-temperature-input[data-index="${index}"]`)),
+          }));
+        } catch (error) {
+          if (error.message === "numeric input validation error") {
+            return;
+          }
+          throw error;
+        }
+        try {
+          const result = await fetchJson("/api/check-records/batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              check_type: document.getElementById("batch_check_type").value,
+              confirmed_by: confirmedBy,
+              furnace_records: furnaceRecords,
+            }),
+          });
+          resetBatchCheckRecordInputs();
+          messageArea.textContent = "";
+          await loadHistory();
+        } catch (error) {
+          if (error.message === "入力された確認者は存在しない番号のため登録できません") {
+            window.alert(error.message);
+          }
+          messageArea.textContent = error.message;
+        }
+      });
+
+      async function submitComment(formType) {
+        const equipmentElement = document.getElementById(`${formType}_comment_equipment_id`);
+        const textElement = document.getElementById(`${formType}_comment_text`);
+        const payload = {
+          equipment_id: equipmentElement.value,
+          comment_text: textElement.value.trim(),
+        };
+        const result = await fetchJson("/api/comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        textElement.value = "";
+        messageArea.textContent = `コメント送信完了: ${result.target.equipment_name} / Group ${result.target.group_no ?? "-"}`;
+      }
+
+      document.getElementById("single-comment-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+          await submitComment("single");
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      });
+
+      document.getElementById("batch-comment-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+          await submitComment("batch");
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      });
+
+      historyFilterButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          currentDateFilter = button.dataset.filter;
+          await loadHistory();
+        });
+      });
+
+      async function initializePage() {
+        try {
+          if (mode === "batch" && groupId) {
+            batchModePanel.classList.remove("hidden");
+            batchHistoryPanel.classList.remove("hidden");
+            await loadBatchMode();
+            await loadHistory();
+            return;
+          }
+          singleModePanel.classList.remove("hidden");
+          singleHistoryPanel.classList.remove("hidden");
+          await loadSingleMode();
+          await loadHistory();
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      }
+
+      initializePage();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>factory / recorder_ip / furnace_recorder_map 管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <section class="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+          <div class="flex flex-col gap-2">
+            <h1 class="text-2xl font-bold">factory / recorder_ip / furnace_recorder_map 管理</h1>
+            <p class="text-sm text-slate-600">各マスタを切り替えて登録し、一覧から is_active を切り替えます。</p>
+          </div>
+          <a href="/portal" class="rounded-xl border border-slate-400 bg-sky-600 px-5 py-3 font-semibold text-white">メイン画面に戻る</a>
+        </div>
+
+        <div class="mb-6 flex flex-wrap gap-3">
+          <button type="button" data-tab="factory" class="tab-button rounded-xl bg-sky-600 px-4 py-2 font-semibold text-white">factory管理</button>
+          <button type="button" data-tab="recorder-ip" class="tab-button rounded-xl bg-slate-200 px-4 py-2 font-semibold text-slate-800">recorder_ip管理</button>
+          <button type="button" data-tab="furnace-recorder-map" class="tab-button rounded-xl bg-slate-200 px-4 py-2 font-semibold text-slate-800">マッピング管理</button>
+        </div>
+
+        <div id="tab-panel-factory" class="tab-panel grid gap-4">
+          <form id="factory-form" class="grid gap-4">
+            <div class="border-b border-slate-200 pb-3">
+              <h2 class="text-lg font-bold">factory 登録</h2>
+            </div>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">工場名</span>
+              <input id="factory_name" name="factory_name" type="text" maxlength="50" required class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" placeholder="例: 加西工場" />
+            </label>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">表示順</span>
+              <input id="display_order" name="display_order" type="number" class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" placeholder="例: 10" />
+            </label>
+            <button type="submit" class="rounded-xl bg-sky-600 px-4 py-3 font-semibold text-white transition hover:bg-sky-700">factory 登録</button>
+          </form>
+        </div>
+
+        <div id="tab-panel-recorder-ip" class="tab-panel hidden grid gap-4">
+          <form id="recorder-ip-form" class="grid gap-4">
+            <div class="border-b border-slate-200 pb-3">
+              <h2 class="text-lg font-bold">recorder_ip 登録</h2>
+              <p class="mt-2 text-sm text-slate-500">port_no は 502 固定で登録します。</p>
+            </div>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">IPアドレス</span>
+              <input id="ip_address" name="ip_address" type="text" maxlength="45" required class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" placeholder="例: 192.168.203.55" />
+            </label>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">グループ番号</span>
+              <input id="group_no" name="group_no" type="number" class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" placeholder="例: 1" />
+            </label>
+            <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700">recorder_ip 登録</button>
+          </form>
+        </div>
+
+        <div id="tab-panel-furnace-recorder-map" class="tab-panel hidden grid gap-4">
+          <form id="furnace-recorder-map-form" class="grid gap-4 md:grid-cols-2">
+            <div class="border-b border-slate-200 pb-3 md:col-span-2">
+              <h2 class="text-lg font-bold">furnace_recorder_map 登録</h2>
+            </div>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">設備名</span>
+              <select id="equipment_id" name="equipment_id" required class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"></select>
+            </label>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">グループ名</span>
+              <select id="equipment_group_id" name="equipment_group_id" class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"></select>
+            </label>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">工場名</span>
+              <select id="map_factory_id" name="factory_id" required class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"></select>
+            </label>
+            <label class="flex flex-col gap-2">
+              <span class="text-sm font-medium">レコーダーIP</span>
+              <select id="recorder_ip_id" name="recorder_ip_id" required class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"></select>
+            </label>
+            <label class="flex flex-col gap-2 md:col-span-2">
+              <span class="text-sm font-medium">CSVファイル名</span>
+              <input id="csv_file_name" name="csv_file_name" type="text" maxlength="100" class="rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200" placeholder="例: sample.csv" />
+            </label>
+            <button type="submit" class="md:col-span-2 rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white transition hover:bg-amber-700">furnace_recorder_map 登録</button>
+          </form>
+        </div>
+
+        <p id="message" class="mt-4 text-sm text-slate-700"></p>
+      </section>
+
+      <section id="table-panel-factory" class="table-panel">
+        <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">factory 一覧</h2>
+            <button id="reload-button" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50">再読込</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-y-2">
+              <thead><tr class="text-left text-sm text-slate-500"><th class="px-4 py-2">ID</th><th class="px-4 py-2">工場名</th><th class="px-4 py-2">表示順</th><th class="px-4 py-2">状態</th><th class="px-4 py-2">更新日時</th><th class="px-4 py-2">操作</th></tr></thead>
+              <tbody id="factory-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="table-panel-recorder-ip" class="table-panel hidden">
+        <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="mb-4 flex items-center justify-between"><h2 class="text-xl font-bold">recorder_ip 一覧</h2></div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-y-2">
+              <thead><tr class="text-left text-sm text-slate-500"><th class="px-4 py-2">ID</th><th class="px-4 py-2">IP</th><th class="px-4 py-2">Port</th><th class="px-4 py-2">Group</th><th class="px-4 py-2">状態</th><th class="px-4 py-2">更新日時</th><th class="px-4 py-2">操作</th></tr></thead>
+              <tbody id="recorder-ip-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="table-panel-furnace-recorder-map" class="table-panel hidden">
+        <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="mb-4 flex items-center justify-between"><h2 class="text-xl font-bold">furnace_recorder_map 一覧</h2></div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-y-2">
+              <thead><tr class="text-left text-sm text-slate-500"><th class="px-4 py-2">ID</th><th class="px-4 py-2">設備名</th><th class="px-4 py-2">グループ名</th><th class="px-4 py-2">工場名</th><th class="px-4 py-2">レコーダーIP</th><th class="px-4 py-2">CSV</th><th class="px-4 py-2">状態</th><th class="px-4 py-2">更新日時</th><th class="px-4 py-2">操作</th></tr></thead>
+              <tbody id="furnace-recorder-map-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const tabButtons = document.querySelectorAll(".tab-button");
+      const tabPanels = document.querySelectorAll(".tab-panel");
+      const tablePanels = document.querySelectorAll(".table-panel");
+      const factoryForm = document.getElementById("factory-form");
+      const recorderIpForm = document.getElementById("recorder-ip-form");
+      const furnaceRecorderMapForm = document.getElementById("furnace-recorder-map-form");
+      const factoryTableBody = document.getElementById("factory-table-body");
+      const recorderIpTableBody = document.getElementById("recorder-ip-table-body");
+      const furnaceRecorderMapTableBody = document.getElementById("furnace-recorder-map-table-body");
+      const equipmentSelect = document.getElementById("equipment_id");
+      const equipmentGroupSelect = document.getElementById("equipment_group_id");
+      const mapFactorySelect = document.getElementById("map_factory_id");
+      const recorderIpSelect = document.getElementById("recorder_ip_id");
+      const messageArea = document.getElementById("message");
+      const reloadButton = document.getElementById("reload-button");
+
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const responseBody = await response.json();
+        if (!response.ok) {
+          throw new Error(responseBody.detail || "API呼び出しに失敗しました。");
+        }
+        return responseBody;
+      }
+
+      async function fetchFactories() { return fetchJson("/api/factories"); }
+      async function fetchRecorderIps() { return fetchJson("/api/recorder-ips"); }
+      async function fetchEquipmentOptions() { return fetchJson("/api/equipment-options"); }
+      async function fetchEquipmentGroupOptions() { return fetchJson("/api/equipment-group-options"); }
+      async function fetchFactoryOptions() { return fetchJson("/api/factory-options"); }
+      async function fetchRecorderIpOptions() { return fetchJson("/api/recorder-ip-options"); }
+      async function fetchFurnaceRecorderMaps() { return fetchJson("/api/furnace-recorder-maps"); }
+
+      function activateTab(tabName) {
+        tabButtons.forEach((button) => {
+          const isActive = button.dataset.tab === tabName;
+          button.className = isActive ? "tab-button rounded-xl bg-sky-600 px-4 py-2 font-semibold text-white" : "tab-button rounded-xl bg-slate-200 px-4 py-2 font-semibold text-slate-800";
+        });
+        tabPanels.forEach((panel) => panel.classList.toggle("hidden", panel.id !== `tab-panel-${tabName}`));
+        tablePanels.forEach((panel) => panel.classList.toggle("hidden", panel.id !== `table-panel-${tabName}`));
+      }
+
+      function renderSelectOptions(selectElement, options, valueKey, labelBuilder, includeEmptyOption) {
+        const htmlParts = [];
+        if (includeEmptyOption) {
+          htmlParts.push('<option value="">未選択</option>');
+        }
+        htmlParts.push(...options.map((option) => `<option value="${option[valueKey]}">${labelBuilder(option)}</option>`));
+        selectElement.innerHTML = htmlParts.join("");
+      }
+
+      function renderFactories(factories) {
+        if (!factories.length) {
+          factoryTableBody.innerHTML = '<tr><td colspan="6" class="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">factory にデータはありません。</td></tr>';
+          return;
+        }
+        factoryTableBody.innerHTML = factories.map((factory) => {
+          const statusLabel = factory.is_active ? "有効" : "無効";
+          const buttonLabel = factory.is_active ? "無効化" : "有効化";
+          return `<tr class="rounded-2xl bg-slate-50 text-sm"><td class="px-4 py-3">${factory.factory_id}</td><td class="px-4 py-3 font-medium">${factory.factory_name}</td><td class="px-4 py-3">${factory.display_order ?? ""}</td><td class="px-4 py-3"><span class="rounded-full px-3 py-1 ${factory.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}">${statusLabel}</span></td><td class="px-4 py-3">${factory.updated_at ?? ""}</td><td class="px-4 py-3"><button type="button" data-factory-id="${factory.factory_id}" class="toggle-button rounded-xl bg-slate-900 px-3 py-2 text-white transition hover:bg-slate-700">状態変更(${buttonLabel})</button></td></tr>`;
+        }).join("");
+      }
+
+      function renderRecorderIps(recorderIps) {
+        if (!recorderIps.length) {
+          recorderIpTableBody.innerHTML = '<tr><td colspan="7" class="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">recorder_ip にデータはありません。</td></tr>';
+          return;
+        }
+        recorderIpTableBody.innerHTML = recorderIps.map((recorderIp) => {
+          const statusLabel = recorderIp.is_active ? "有効" : "無効";
+          const buttonLabel = recorderIp.is_active ? "無効化" : "有効化";
+          return `<tr class="rounded-2xl bg-slate-50 text-sm"><td class="px-4 py-3">${recorderIp.recorder_ip_id}</td><td class="px-4 py-3 font-medium">${recorderIp.ip_address}</td><td class="px-4 py-3">${recorderIp.port_no}</td><td class="px-4 py-3">${recorderIp.group_no ?? ""}</td><td class="px-4 py-3"><span class="rounded-full px-3 py-1 ${recorderIp.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}">${statusLabel}</span></td><td class="px-4 py-3">${recorderIp.updated_at ?? ""}</td><td class="px-4 py-3"><button type="button" data-recorder-ip-id="${recorderIp.recorder_ip_id}" class="recorder-ip-toggle-button rounded-xl bg-slate-900 px-3 py-2 text-white transition hover:bg-slate-700">状態変更(${buttonLabel})</button></td></tr>`;
+        }).join("");
+      }
+
+      function renderFurnaceRecorderMaps(furnaceRecorderMaps) {
+        if (!furnaceRecorderMaps.length) {
+          furnaceRecorderMapTableBody.innerHTML = '<tr><td colspan="9" class="rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">furnace_recorder_map にデータはありません。</td></tr>';
+          return;
+        }
+        furnaceRecorderMapTableBody.innerHTML = furnaceRecorderMaps.map((mapItem) => {
+          const statusLabel = mapItem.is_active ? "有効" : "無効";
+          const buttonLabel = mapItem.is_active ? "無効化" : "有効化";
+          return `<tr class="rounded-2xl bg-slate-50 text-sm"><td class="px-4 py-3">${mapItem.furnace_recorder_map_id}</td><td class="px-4 py-3">${mapItem.equipment_name ?? ""}</td><td class="px-4 py-3">${mapItem.equipment_group_name ?? ""}</td><td class="px-4 py-3">${mapItem.factory_name ?? ""}</td><td class="px-4 py-3">${mapItem.recorder_ip_display ?? ""}</td><td class="px-4 py-3">${mapItem.csv_file_name ?? ""}</td><td class="px-4 py-3"><span class="rounded-full px-3 py-1 ${mapItem.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}">${statusLabel}</span></td><td class="px-4 py-3">${mapItem.updated_at ?? ""}</td><td class="px-4 py-3"><button type="button" data-furnace-recorder-map-id="${mapItem.furnace_recorder_map_id}" class="furnace-recorder-map-toggle-button rounded-xl bg-slate-900 px-3 py-2 text-white transition hover:bg-slate-700">状態変更(${buttonLabel})</button></td></tr>`;
+        }).join("");
+      }
+
+      async function loadMapFormOptions() {
+        const [equipmentOptions, equipmentGroupOptions, factoryOptions, recorderIpOptions] = await Promise.all([fetchEquipmentOptions(), fetchEquipmentGroupOptions(), fetchFactoryOptions(), fetchRecorderIpOptions()]);
+        renderSelectOptions(equipmentSelect, equipmentOptions, "equipment_id", (option) => option.name, false);
+        renderSelectOptions(equipmentGroupSelect, equipmentGroupOptions, "equipment_group_id", (option) => option.name, true);
+        renderSelectOptions(mapFactorySelect, factoryOptions, "factory_id", (option) => option.factory_name, false);
+        renderSelectOptions(recorderIpSelect, recorderIpOptions, "recorder_ip_id", (option) => `${option.ip_address} / Group ${option.group_no}`, false);
+      }
+
+      async function loadMasterData() {
+        messageArea.textContent = "";
+        try {
+          const [factories, recorderIps, furnaceRecorderMaps] = await Promise.all([fetchFactories(), fetchRecorderIps(), fetchFurnaceRecorderMaps(), loadMapFormOptions()]);
+          renderFactories(factories);
+          renderRecorderIps(recorderIps);
+          renderFurnaceRecorderMaps(furnaceRecorderMaps);
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      }
+
+      factoryForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(factoryForm);
+        const payload = { factory_name: String(formData.get("factory_name") || "").trim(), display_order: String(formData.get("display_order") || "").trim() === "" ? null : Number(formData.get("display_order")) };
+        try {
+          const responseBody = await fetchJson("/api/factories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          factoryForm.reset();
+          messageArea.textContent = `登録完了: ${responseBody.factory.factory_name}`;
+          await loadMasterData();
+        } catch (error) { messageArea.textContent = error.message; }
+      });
+
+      recorderIpForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(recorderIpForm);
+        const payload = { ip_address: String(formData.get("ip_address") || "").trim(), group_no: String(formData.get("group_no") || "").trim() === "" ? null : Number(formData.get("group_no")) };
+        try {
+          const responseBody = await fetchJson("/api/recorder-ips", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          recorderIpForm.reset();
+          messageArea.textContent = `登録完了: ${responseBody.recorder_ip.ip_address}`;
+          await loadMasterData();
+        } catch (error) { messageArea.textContent = error.message; }
+      });
+
+      furnaceRecorderMapForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(furnaceRecorderMapForm);
+        const payload = {
+          equipment_id: String(formData.get("equipment_id") || ""),
+          equipment_group_id: String(formData.get("equipment_group_id") || "") || null,
+          factory_id: Number(formData.get("factory_id")),
+          recorder_ip_id: Number(formData.get("recorder_ip_id")),
+          csv_file_name: String(formData.get("csv_file_name") || "").trim() || null,
+        };
+        try {
+          const responseBody = await fetchJson("/api/furnace-recorder-maps", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          furnaceRecorderMapForm.reset();
+          messageArea.textContent = `登録完了: furnace_recorder_map_id ${responseBody.furnace_recorder_map.furnace_recorder_map_id}`;
+          await loadMasterData();
+        } catch (error) { messageArea.textContent = error.message; }
+      });
+
+      document.addEventListener("click", async (event) => {
+        const factoryButton = event.target.closest(".toggle-button");
+        if (factoryButton) {
+          try {
+            await fetchJson(`/api/factories/${factoryButton.dataset.factoryId}/toggle`, { method: "PATCH" });
+            await loadMasterData();
+          } catch (error) {
+            messageArea.textContent = error.message;
+          }
+          return;
+        }
+
+        const recorderIpButton = event.target.closest(".recorder-ip-toggle-button");
+        if (recorderIpButton) {
+          try {
+            await fetchJson(`/api/recorder-ips/${recorderIpButton.dataset.recorderIpId}/toggle`, { method: "PATCH" });
+            await loadMasterData();
+          } catch (error) {
+            messageArea.textContent = error.message;
+          }
+          return;
+        }
+
+        const mapButton = event.target.closest(".furnace-recorder-map-toggle-button");
+        if (mapButton) {
+          try {
+            await fetchJson(`/api/furnace-recorder-maps/${mapButton.dataset.furnaceRecorderMapId}/toggle`, { method: "PATCH" });
+            await loadMasterData();
+          } catch (error) {
+            messageArea.textContent = error.message;
+          }
+        }
+      });
+
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () => activateTab(button.dataset.tab));
+      });
+
+      reloadButton.addEventListener("click", loadMasterData);
+
+      activateTab("factory");
+      loadMasterData();
+    </script>
+  </body>
+</html>

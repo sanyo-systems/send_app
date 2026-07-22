@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>炉種・炉名選択</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <main class="mx-auto max-w-3xl px-4 py-10">
+      <section class="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <h1 class="mb-6 text-3xl font-bold">炉種・炉名選択</h1>
+        <div class="grid gap-6">
+          <label class="flex flex-col gap-2">
+            <span class="text-lg font-semibold">炉種</span>
+            <select id="group_id" class="rounded-xl border border-slate-300 px-4 py-4 text-lg"></select>
+          </label>
+          <label id="equipment-select-wrapper" class="hidden flex-col gap-2">
+            <span class="text-lg font-semibold">炉名</span>
+            <select id="equipment_id" class="rounded-xl border border-slate-300 px-4 py-4 text-lg"></select>
+          </label>
+          <div class="flex justify-end">
+            <button id="decide-button" type="button" class="rounded-xl bg-sky-600 px-8 py-4 text-lg font-semibold text-white">決定</button>
+          </div>
+          <p id="message" class="text-sm text-slate-700"></p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const groupSelect = document.getElementById("group_id");
+      const equipmentSelectWrapper = document.getElementById("equipment-select-wrapper");
+      const equipmentSelect = document.getElementById("equipment_id");
+      const decideButton = document.getElementById("decide-button");
+      const messageArea = document.getElementById("message");
+      let groupOptions = [];
+
+      async function fetchJson(url) {
+        const response = await fetch(url);
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail || "取得に失敗しました。");
+        return body;
+      }
+
+      function renderSelectOptions(selectElement, options, valueKey, labelKey) {
+        selectElement.innerHTML = options.map((option) => `<option value="${option[valueKey]}">${option[labelKey]}</option>`).join("");
+      }
+
+      function isBatchGroup(groupName) {
+        return groupName === "ピット" || groupName === "バッチ";
+      }
+
+      async function handleGroupChange() {
+        const selectedGroup = groupOptions.find((option) => option.equipment_group_id === groupSelect.value);
+        if (!selectedGroup) return;
+        if (isBatchGroup(selectedGroup.name)) {
+          equipmentSelectWrapper.classList.add("hidden");
+          equipmentSelect.innerHTML = "";
+          return;
+        }
+        const equipmentOptions = await fetchJson(`/api/portal/equipment-options?group_id=${encodeURIComponent(selectedGroup.equipment_group_id)}`);
+        renderSelectOptions(equipmentSelect, equipmentOptions, "equipment_id", "name");
+        equipmentSelectWrapper.classList.remove("hidden");
+      }
+
+      decideButton.addEventListener("click", () => {
+        const selectedGroup = groupOptions.find((option) => option.equipment_group_id === groupSelect.value);
+        if (!selectedGroup) return;
+        if (isBatchGroup(selectedGroup.name)) {
+          window.location.href = `/index.html?mode=batch&group_id=${encodeURIComponent(selectedGroup.equipment_group_id)}`;
+          return;
+        }
+        window.location.href = `/index.html?mode=single&equipment_id=${encodeURIComponent(equipmentSelect.value)}`;
+      });
+
+      groupSelect.addEventListener("change", async () => {
+        try {
+          await handleGroupChange();
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      });
+
+      async function loadPortalData() {
+        try {
+          groupOptions = await fetchJson("/api/portal/group-options");
+          renderSelectOptions(groupSelect, groupOptions, "equipment_group_id", "name");
+          await handleGroupChange();
+        } catch (error) {
+          messageArea.textContent = error.message;
+        }
+      }
+
+      loadPortalData();
+    </script>
+  </body>
+</html>
